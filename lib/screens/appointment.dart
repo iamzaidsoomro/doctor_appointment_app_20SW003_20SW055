@@ -21,6 +21,7 @@ class _AppointmentState extends State<Appointment> {
       'r9d5trnvgzWvlDNeOsco',
       'wQr7rTtq6AzNmqXr0iLe'
     ];
+    String doctor = '';
     for (String i in docs) {
       db.collection('doctors').doc(i).get().then((value) {
         if (value.data() != null) {
@@ -126,6 +127,7 @@ class _AppointmentState extends State<Appointment> {
                   ),
                   onChanged: (val) {
                     _selected_doc = val;
+                    doctor = val;
                     for (int i = 0; i < _items.length; i++) {
                       if (_items[i]['label'] == val) {
                         _selected_doc = _items[i]['id'];
@@ -199,6 +201,7 @@ class _AppointmentState extends State<Appointment> {
                           description != null &&
                           _selected_doc != null &&
                           _selected_day != null) {
+                        var time = [0, 0];
                         db.collection('appointments').add({
                           'patient': pname,
                           'patient_id': uid,
@@ -206,11 +209,15 @@ class _AppointmentState extends State<Appointment> {
                           'day': _selected_day,
                           'disease': description,
                           'status': 'pending',
-                          'timestamp': FieldValue.serverTimestamp()
+                          'timestamp': FieldValue.serverTimestamp(),
+                          'time': time,
                         }).then((value) {
                           print(value.id);
                           db.collection('users').doc(uid).update({
-                            'appointments': FieldValue.arrayUnion([value.id])
+                            'appointments': FieldValue.arrayUnion([value]),
+                            'doctorname': FieldValue.arrayUnion([doctor]),
+                            'patientname': FieldValue.arrayUnion([pname]),
+                            'day': FieldValue.arrayUnion([_selected_day]),
                           }).then((value) {
                             print('success');
                           }).catchError((e) => setState(() {

@@ -8,10 +8,11 @@ class MyAppointments extends StatefulWidget {
 }
 
 class _MyAppointmentsState extends State<MyAppointments> {
+  dynamic docnames = [];
+  dynamic patientnames = [];
+  dynamic days = [];
   @override
   Widget build(BuildContext context) {
-    final db = FirebaseFirestore.instance.collection('appointments');
-    var name = '';
     var user_appointment_codes = [];
     return Scaffold(
       appBar: AppBar(
@@ -32,42 +33,40 @@ class _MyAppointmentsState extends State<MyAppointments> {
                     .get()
                     .then((value) {
                   user_appointment_codes = value.data()?['appointments'];
-                  print(user_appointment_codes);
+                  docnames = value.data()?['doctorname'];
+                  patientnames = value.data()?['patientname'];
+                  days = value.data()?['day'];
                 });
                 return Center(
                   child: CircularProgressIndicator(),
                 );
               }
+              // user_appointment_codes = FirebaseFirestore.instance.collection('appointments').doc()
               int index = 0;
+              print(user_appointment_codes);
               return ListView.builder(
                   itemCount: user_appointment_codes.length,
                   itemBuilder: (BuildContext context, index) {
-                    db
-                        .doc(user_appointment_codes[index])
-                        .get()
-                        .then((value) async {
-                      name = value.data()?['patient'];
-                      print(name);
-                    });
                     return Card(
                       child: ListTile(
                         leading: Icon(Icons.calendar_today),
                         title: Text(
-                          user_appointment_codes[index],
+                          patientnames[index],
                           style: TextStyle(fontSize: 18),
                         ),
-                        subtitle: Text(
-                          'Appointment ID',
-                          style: TextStyle(fontSize: 15),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              docnames[index],
+                              style: TextStyle(fontSize: 15),
+                            ),
+                          ],
                         ),
-                        trailing: IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () {
-                            db.doc(user_appointment_codes[index]).delete();
-                            setState(() {
-                              user_appointment_codes.removeAt(index);
-                            });
-                          },
+                        trailing: Text(
+                          days[index],
+                          style: TextStyle(
+                              fontSize: 15, color: Colors.greenAccent),
                         ),
                       ),
                     );
